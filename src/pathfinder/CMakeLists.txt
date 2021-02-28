@@ -9,15 +9,20 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs)
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES pathfinder
-#  CATKIN_DEPENDS roscpp sensor_msgs std_msgs
-#  DEPENDS system_lib
+  #  INCLUDE_DIRS include
+  #  LIBRARIES pathfinder
+  #  CATKIN_DEPENDS roscpp sensor_msgs std_msgs
+  #  DEPENDS system_lib
 )
 
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} src/main.cc)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+  set(ASAN_FLAGS "-fno-omit-frame-pointer -fsanitize=address")
+  target_compile_options(${PROJECT_NAME} ${ASAN_FLAGS})
+  target_link_libraries(${PROJECT_NAME} ${ASAN_FLAGS})
+endif()
 
 message("${CATKIN_PACKAGE_BIN_DESTINATION}")
 install(TARGETS ${PROJECT_NAME}
