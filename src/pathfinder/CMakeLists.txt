@@ -18,9 +18,9 @@ catkin_package(
 include_directories(${catkin_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} src/main.cc)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
-if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-  set(ASAN_FLAGS "-fno-omit-frame-pointer -fsanitize=address")
-  target_compile_options(${PROJECT_NAME} ${ASAN_FLAGS})
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(ASAN_FLAGS -fno-omit-frame-pointer -fsanitize=address)
+  target_compile_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
   target_link_libraries(${PROJECT_NAME} ${ASAN_FLAGS})
 endif()
 
