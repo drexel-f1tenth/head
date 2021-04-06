@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
-#include <std_msgs/UInt8.h>
+#include <std_msgs/UInt16.h>
 #include <vector>
 
 class Pathfinder
@@ -27,7 +27,7 @@ public:
     float min_range = frame.range_max;
     for (size_t i = 0; i < frame.ranges.size(); i++)
     {
-      if (fabs(_angles[i]) > 0.8)
+      if (fabs(_angles[i]) > 0.2)
         continue;
 
       if (frame.ranges[i] < 1.0)
@@ -43,7 +43,7 @@ public:
       }
     }
     printf("min: %.2f, %.2f\n", min_angle, min_range);
-    return 5;
+    return 6;
   }
 };
 
@@ -52,12 +52,12 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "pathfinder");
   ros::NodeHandle node;
 
-  static ros::Publisher pub = node.advertise<std_msgs::UInt8>("/mcu/ctl", 1);
+  static ros::Publisher pub = node.advertise<std_msgs::UInt16>("/mcu/ctl", 1);
   static Pathfinder pathfinder{};
   auto scan_cb = [](sensor_msgs::LaserScan const& frame) {
     auto rps = pathfinder.update_frame(frame);
-    std_msgs::UInt8 msg{};
-    msg.data = rps;
+    std_msgs::UInt16 msg{};
+    msg.data = (uint16_t)rps << 8;
     pub.publish(msg);
   };
 
