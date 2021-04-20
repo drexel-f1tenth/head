@@ -30,7 +30,7 @@ struct Msg
   std_msgs::UInt16 serialize() const
   {
     std_msgs::UInt16 msg;
-    msg.data = ((uint16_t)throttle << 8) | (uint16_t)steering;
+    msg.data = ((uint16_t)throttle << 8) | ((uint16_t)steering & 0xff);
     return msg;
   }
 };
