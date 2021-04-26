@@ -6,6 +6,23 @@
 #include <std_msgs/UInt16.h>
 #include <vector>
 
+struct CtlMsg
+{
+  int8_t throttle;
+  int8_t steering;
+
+  CtlMsg(int8_t throttle_, int8_t steering_)
+  : throttle{throttle_}, steering{steering_}
+  {}
+
+  std_msgs::UInt16 serialize() const
+  {
+    std_msgs::UInt16 msg;
+    msg.data = ((uint16_t)throttle << 8) | ((uint16_t)steering & 0xff);
+    return msg;
+  }
+};
+
 class Pathfinder
 {
   std::vector<float> _angles;
@@ -13,7 +30,7 @@ class Pathfinder
 public:
   Pathfinder() {}
 
-  uint8_t update_frame(sensor_msgs::LaserScan const& frame)
+  CtlMsg update_frame(sensor_msgs::LaserScan const& frame)
   {
     if ((_angles.size() == 0) || (_angles[0] != frame.angle_min))
     {
@@ -33,7 +50,7 @@ public:
       if (frame.ranges[i] < 1.0)
       {
         printf("stop: %.2f, %.2f\n", _angles[i], frame.ranges[i]);
-        return 0;
+        return CtlMsg{0, 0};
       }
 
       if (frame.ranges[i] < min_range)
@@ -43,7 +60,7 @@ public:
       }
     }
     printf("min: %.2f, %.2f\n", min_angle, min_range);
-    return 6;
+    return CtlMsg{6, 0};
   }
 };
 
@@ -55,10 +72,8 @@ int main(int argc, char** argv)
   static ros::Publisher pub = node.advertise<std_msgs::UInt16>("/mcu/ctl", 1);
   static Pathfinder pathfinder{};
   auto scan_cb = [](sensor_msgs::LaserScan const& frame) {
-    auto rps = pathfinder.update_frame(frame);
-    std_msgs::UInt16 msg{};
-    msg.data = (uint16_t)rps << 8;
-    pub.publish(msg);
+    auto const msg = pathfinder.update_frame(frame);
+    pub.publish(msg.serialize());
   };
 
   using ScanCB = void (*)(sensor_msgs::LaserScan const&);
