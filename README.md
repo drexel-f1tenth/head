@@ -1,7 +1,7 @@
 # head
 Main Control Unit (TX2)
 
-## Installation
+## Build Instructions
 ```
 catkin_make --use-ninja -DCMAKE_BUILD_TYPE=Release
 ```
