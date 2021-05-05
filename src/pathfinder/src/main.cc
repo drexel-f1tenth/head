@@ -66,7 +66,7 @@ public:
 
         auto const t = atan2(safety, r);
 
-        int const d_idx = (int)((t / frame.angle_increment) * 2);
+        auto const d_idx = (int)((t / frame.angle_increment) * 2);
         auto const lower = std::max(0, i - d_idx);
         auto const upper = std::min((int)_angles.size(), i + d_idx);
 
@@ -90,16 +90,18 @@ public:
         _filtered[path]);
 
       static constexpr float rad_to_deg = 180.0 / M_PI;
-      auto wheel_angle = (int8_t)round(_angles[path] * rad_to_deg);
+      // auto wheel_angle = (int8_t)round(_angles[path] * rad_to_deg);
 
-      if (wheel_angle > 40)
-      {
-        wheel_angle = 40;
-      }
-      else if (wheel_angle < -40)
-      {
-        wheel_angle = -40;
-      }
+      // if (wheel_angle > 40)
+      // {
+      //   wheel_angle = 40;
+      // }
+      // else if (wheel_angle < -40)
+      // {
+      //   wheel_angle = -40;
+      // }
+      auto const wheel_angle =
+        std::clamp<int8_t>(round(_angles[path] * rad_to_deg), -40, 40);
 
       // Stop when chosen path's range is <1m
       if (frame.ranges[path] < 1.0)
