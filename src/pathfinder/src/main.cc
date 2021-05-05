@@ -28,18 +28,18 @@ class Pathfinder
 {
   std::vector<float> _angles;
   std::vector<float> _filtered;
-  static constexpr bool lidar_steering true;
+  static constexpr bool lidar_steering = true;
 
 public:
   Pathfinder() {}
 
   CtlMsg update_frame(sensor_msgs::LaserScan const& frame)
   {
-    if ((_angles.size() == 0) || (_angles[0] != frame.angle_min[0]))
+    if ((_angles.size() == 0) || (_angles[0] != frame.angle_min))
     {
-      _angles.push_back(frame.angle_min[0]);
+      _angles.push_back(frame.angle_min);
       for (size_t i = 1; i < frame.ranges.size(); i++)
-        _angles.push_back(_angles.back() + frame.angle_increment[0]);
+        _angles.push_back(_angles.back() + frame.angle_increment);
     }
 
     assert(_angles.size() == frame.ranges.size());
@@ -66,7 +66,7 @@ public:
 
         auto const t = atan2(safety, r);
 
-        int const d_idx = (int)((t / frame.angle_increment[0]) * 2);
+        int const d_idx = (int)((t / frame.angle_increment) * 2);
         auto const lower = std::max(0, i - d_idx);
         auto const upper = std::min((int)_angles.size(), i + d_idx);
 
@@ -89,9 +89,17 @@ public:
         frame.ranges[path],
         _filtered[path]);
 
-      int8_t wheel_angle = round(_angles[path] * 57.30);
+      static constexpr float rad_to_deg = 180.0 / M_PI;
+      auto wheel_angle = (int8_t)round(_angles[path] * rad_to_deg);
 
-      wheel_angle = std::clamp(wheel_angle, -40, 40);
+      if (wheel_angle > 40)
+      {
+        wheel_angle = 40;
+      }
+      else if (wheel_angle < -40)
+      {
+        wheel_angle = -40;
+      }
 
       // Stop when chosen path's range is <1m
       if (frame.ranges[path] < 1.0)
@@ -108,7 +116,7 @@ public:
     else
     {
       float min_angle = 0.0;
-      float min_range = frame.range_max[0];
+      float min_range = frame.range_max;
       for (size_t i = 0; i < frame.ranges.size(); i++)
       {
         // If the angle is outside of +/- 0.2 rads then break that loop
