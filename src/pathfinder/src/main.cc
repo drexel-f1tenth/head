@@ -26,7 +26,7 @@ struct CtlMsg
 
 class Pathfinder
 {
-  static constexpr bool lidar_steering = true;
+  static constexpr float safety_radius = 0.500 / 2.0;
   static constexpr float rad_to_deg = 180.0 / M_PI;
   static constexpr float deg_to_rad = M_PI / 180.0;
   static constexpr float angle_max = 60.0 * deg_to_rad;
@@ -57,74 +57,35 @@ public:
       _filtered.resize(_angles.size());
     }
 
-    if constexpr (lidar_steering)
+    auto const* ranges = &frame.ranges[_range_start];
+    std::copy(ranges[0], ranges[_angles.size()], _filtered.begin());
+
+    for (int i = 0; i < (int)_angles.size(); i++)
     {
-      // TODO: avoid this copy
-      _filtered.clear();
-      auto const* ranges = &frame.ranges[_range_start];
-      for (size_t i = 0; i < _angles.size(); i++)
-        _filtered.push_back(ranges[i]);
-
-      static constexpr float safety = 0.500 / 2.0;
-
-      for (int i = 0; i < (int)_angles.size(); i++)
-      {
-        auto const r = std::min<float>(ranges[i], 10.0);
-        auto const t = atan2(safety, r);
-        auto const d_idx = (int)((t / frame.angle_increment) * 2);
-        auto const lower = std::max(0, i - d_idx);
-        auto const upper = std::min((int)_angles.size(), i + d_idx);
-        for (int j = lower; j < upper; j++)
-        {
-          if (_filtered[i] > ranges[j])
-            _filtered[i] = ranges[j];
-        }
-      }
-
-      // Selection process
-      auto const path = std::max_element(_filtered.begin(), _filtered.end()) -
-        _filtered.begin();
-
-      auto const steering_angle =
-        std::clamp<int8_t>(-round(_angles[path] * rad_to_deg), -40, 40);
-
-      printf(
-        "angle: %d, range: %.2f, filtered: %.2f\n",
-        steering_angle,
-        ranges[path],
-        _filtered[path]);
-
-      int8_t const throttle = (ranges[path] < 1.0) ? 0 : 6;
-      return CtlMsg{throttle, steering_angle};
+      auto const r = std::min<float>(ranges[i], 10.0);
+      auto const t = atan2(safety_radius, r);
+      auto const d_idx = (int)std::ceil(t / frame.angle_increment);
+      auto const lower = std::max(0, i - d_idx);
+      auto const upper = std::min((int)_angles.size(), i + d_idx);
+      auto const local_min = *std::min_element(ranges[lower], ranges[upper]);
+      for (int j = lower; j < upper; j++)
+        _filtered[j] = std::min(_filtered[j], local_min);
     }
-    else
-    {
-      float min_angle = 0.0;
-      float min_range = frame.range_max;
-      for (size_t i = 0; i < frame.ranges.size(); i++)
-      {
-        // If the angle is outside of +/- 0.2 rads then break that loop
-        // iteration
-        if (fabs(_angles[i]) > 0.2)
-          continue;
 
-        if (frame.ranges[i] < 1.0)
-        {
-          printf("stop: %.3f, %.3f\n", _angles[i], frame.ranges[i]);
-          return CtlMsg{0, 0};
-        }
+    auto const path =
+      std::max_element(_filtered.begin(), _filtered.end()) - _filtered.begin();
 
-        // If detected range is less than maximum possible range
-        // Store as the "new" minimum range observed
-        if (frame.ranges[i] < min_range)
-        {
-          min_range = frame.ranges[i];
-          min_angle = _angles[i];
-        }
-      }
-      printf("min: %.3f, %.3f\n", min_angle, min_range);
-      return CtlMsg{6, 0};
-    }
+    auto const steering_angle =
+      std::clamp<int8_t>(-round(_angles[path] * rad_to_deg), -40, 40);
+
+    printf(
+      "angle: %d, range: %.2f, filtered: %.2f\n",
+      steering_angle,
+      ranges[path],
+      _filtered[path]);
+
+    int8_t const throttle = (ranges[path] < 1.0) ? 0 : 6;
+    return CtlMsg{throttle, steering_angle};
   }
 };
 
