@@ -58,7 +58,7 @@ public:
     }
 
     auto const* ranges = &frame.ranges[_range_start];
-    std::copy(ranges[0], ranges[_angles.size()], _filtered.begin());
+    std::copy(&ranges[0], &ranges[_angles.size()], _filtered.begin());
 
     for (int i = 0; i < (int)_angles.size(); i++)
     {
@@ -67,7 +67,7 @@ public:
       auto const d_idx = (int)std::ceil(t / frame.angle_increment);
       auto const lower = std::max(0, i - d_idx);
       auto const upper = std::min((int)_angles.size(), i + d_idx);
-      auto const local_min = *std::min_element(ranges[lower], ranges[upper]);
+      auto const local_min = *std::min_element(&ranges[lower], &ranges[upper]);
       for (int j = lower; j < upper; j++)
         _filtered[j] = std::min(_filtered[j], local_min);
     }
