@@ -34,6 +34,7 @@ class Pathfinder
   std::vector<float> _angles;
   std::vector<float> _filtered;
   size_t _range_start = 0;
+  int8_t _steering_angle = 0;
 
 public:
   Pathfinder() {}
@@ -60,8 +61,17 @@ public:
     auto const* ranges = &frame.ranges[_range_start];
     std::copy(&ranges[0], &ranges[_angles.size()], _filtered.begin());
 
+    size_t stop_counter = 0;
     for (int i = 0; i < (int)_angles.size(); i++)
     {
+      if (
+        (ranges[i] < 0.5) ||
+        ((abs(_angles[i]) < (5.0 * deg_to_rad)) && (ranges[i] <= 1.0)))
+      {
+        printf("angle: %d, range: %.2f\n", _steering_angle, ranges[i]);
+        return CtlMsg{0, _steering_angle};
+      }
+
       auto const r = std::min<float>(ranges[i], 10.0);
       auto const t = atan2(safety_radius, r);
       auto const d_idx = (int)std::ceil(t / frame.angle_increment);
@@ -75,17 +85,16 @@ public:
     auto const path =
       std::max_element(_filtered.begin(), _filtered.end()) - _filtered.begin();
 
-    auto const steering_angle =
+    _steering_angle =
       std::clamp<int8_t>(-round(_angles[path] * rad_to_deg), -40, 40);
 
     printf(
       "angle: %d, range: %.2f, filtered: %.2f\n",
-      steering_angle,
+      _steering_angle,
       ranges[path],
       _filtered[path]);
 
-    int8_t const throttle = (ranges[path] < 1.0) ? 0 : 6;
-    return CtlMsg{throttle, steering_angle};
+    return CtlMsg{6, _steering_angle};
   }
 };
 
