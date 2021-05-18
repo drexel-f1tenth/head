@@ -4,9 +4,9 @@ PartOf=racecar.service
 After=racecar.service NetworkManager.service time-sync.target
 
 [Service]
-Type=Forking
-ExecStart=/bin/sh /usr/local/sbin/roscore-start.sh
+Type=forking
 Restart=on-failure
+ExecStart=/bin/sh /usr/local/sbin/roscore-start.sh
 
 [Install]
 WantedBy=racecar.service

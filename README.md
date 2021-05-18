@@ -20,12 +20,13 @@ The systemd services, in `service/`, allow all necessary components to autostart
 ### Installing the services
 
 - `sudo cp service/*.service /etc/systemd/system/`
+- `sudo cp service/*.sh /usr/local/sbin/`
 - `sudo systemctl daemon-reload`
-- `sudo systemctl enable racecar roscore`
+- `sudo systemctl enable racecar roscore lidar`
 
 ### Useful commands
 
-- Check status: `sudo systemctl status racecar roscore`
+- Check status: `sudo systemctl status racecar roscore lidar`
 - View logs: `journalctl -e`
 - Stop a service: `sudo systemctl stop ${service-name}`
 - Start a service: `sudo systemctl start ${service-name}`

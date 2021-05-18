@@ -3,8 +3,8 @@ Description=racecar
 
 [Service]
 Type=oneshot
-ExecStart=/bin/true
 RemainAfterExit=yes
+ExecStart=/bin/true
 
 [Install]
 WantedBy=multi-user.target
