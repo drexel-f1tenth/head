@@ -13,6 +13,25 @@ catkin_make --use-ninja -DCMAKE_BUILD_TYPE=Release
 - `rosrun urg_node urg_node _ip_address:=${HOKUYO_DEV}`
 - `rosrun pathfinder pathfinder`
 
+## Managing the systemd services
+
+The systemd services, in `service/`, allow all necessary components to autostart then the TX2 it booted up. Each service manages an individual ROS node, except for the `racecar` service. The `racecar` service is used to manage the other associated services as a group.
+
+### Installing the services
+
+- `sudo cp service/*.service /etc/systemd/system/`
+- `sudo systemctl daemon-reload`
+- `sudo systemctl enable racecar roscore`
+
+### Useful commands
+
+- Check status: `sudo systemctl status racecar roscore`
+- View logs: `journalctl -e`
+- Stop a service: `sudo systemctl stop ${service-name}`
+- Start a service: `sudo systemctl start ${service-name}`
+- Restart a service: `sudo systemctl restart ${service-name}`
+- Disable a service: `sudo systemctl mask ${service-name}`
+
 ## MCU control message format
 
 The `mcu/ctl` topic uses the ROS UInt16 message type where the throttle and steering directions are encoded as packed Int8 values.
@@ -28,7 +47,7 @@ The `mcu/ctl` topic uses the ROS UInt16 message type where the throttle and stee
 
 ## Tools
 
-- `lidar-debug.py`: Generate a polar plot from the output of the LiDAR (assuming frames are published to the `/scan` topic)
+- `scripts/lidar-debug.py`: Generate a polar plot from the output of the LiDAR (assuming frames are published to the `/scan` topic)
 - `mcu_pub`: Publish a control message to the MCU (on the `mcu/ctl` topic)
   - Run with `rosrun mcu_pub mcu_pub <throttle> <steering>`
 
