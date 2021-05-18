@@ -6,32 +6,12 @@ Main Control Unit (TX2)
 catkin_make --use-ninja -DCMAKE_BUILD_TYPE=Release
 ```
 
-## Individual node startup
+## Manual node startup
 
 - `source devel/setup.bash`
 - `roscore`
 - `rosrun urg_node urg_node _ip_address:=${HOKUYO_DEV}`
 - `rosrun pathfinder pathfinder`
-
-## Managing the systemd services
-
-The systemd services, in `service/`, allow all necessary components to autostart then the TX2 it booted up. Each service manages an individual ROS node, except for the `racecar` service. The `racecar` service is used to manage the other associated services as a group.
-
-### Installing the services
-
-- `sudo cp service/*.service /etc/systemd/system/`
-- `sudo cp service/*.sh /usr/local/sbin/`
-- `sudo systemctl daemon-reload`
-- `sudo systemctl enable racecar roscore lidar`
-
-### Useful commands
-
-- Check status: `sudo systemctl status racecar roscore lidar`
-- View logs: `journalctl -e`
-- Stop a service: `sudo systemctl stop ${service-name}`
-- Start a service: `sudo systemctl start ${service-name}`
-- Restart a service: `sudo systemctl restart ${service-name}`
-- Disable a service: `sudo systemctl mask ${service-name}`
 
 ## MCU control message format
 
