@@ -68,7 +68,7 @@ public:
         (ranges[i] < 0.5) ||
         ((abs(_angles[i]) < (5.0 * deg_to_rad)) && (ranges[i] <= 1.0)))
       {
-        printf("angle: %d, range: %.2f\n", _steering_angle, ranges[i]);
+        // printf("angle: %d, range: %.2f\n", _steering_angle, ranges[i]);
         return CtlMsg{0, _steering_angle};
       }
 
@@ -88,11 +88,11 @@ public:
     _steering_angle =
       std::clamp<int8_t>(-round(_angles[path] * rad_to_deg), -40, 40);
 
-    printf(
-      "angle: %d, range: %.2f, filtered: %.2f\n",
-      _steering_angle,
-      ranges[path],
-      _filtered[path]);
+    // printf(
+    //   "angle: %d, range: %.2f, filtered: %.2f\n",
+    //   _steering_angle,
+    //   ranges[path],
+    //   _filtered[path]);
 
     return CtlMsg{6, _steering_angle};
   }
