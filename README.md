@@ -2,9 +2,9 @@
 Main Control Unit (TX2)
 
 ## Build Instructions
-```
-catkin_make --use-ninja -DCMAKE_BUILD_TYPE=Release
-```
+
+- Build the C++ components: `catkin_make --use-ninja -DCMAKE_BUILD_TYPE=Release`. (replace "Release" with "Debug" if you want faster builds at the cost of some performance)
+- Install the pathfinder: `sudo cp ./devel/lib/pathfinder/pathfinder /usr/local/sbin`
 
 ## Manual node startup
 
