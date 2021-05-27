@@ -36,3 +36,9 @@ The `mcu/ctl` topic uses the ROS UInt16 message type where the throttle and stee
 
 - [sensor_msgs/LaserScan Message](http://docs.ros.org/en/api/sensor_msgs/html/msg/LaserScan.html)
 - If you want to connect to the internet, it may be necessary to toggle the `eth0` interface using `ifdown eth0` and `ifup eth0`. The `eth0` interface is used for communication with the LiDAR, but the network manager on the TX2 prioritizes it over WiFi interfaces even though it is not connected to a network.
+- If experience slow connection (high ping) when connecting to the Jetson over SSH. Make sure that Wi-Fi power management is disabled.
+  - This should be solved by having a file, `/etc/NetworkManager/conf.d/default-wifi-powersave-off.conf`, containing the following:
+    ```
+    [connection]
+    wifi.powersave = 2
+    ```
